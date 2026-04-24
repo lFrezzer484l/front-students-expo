@@ -1,98 +1,105 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import Button from '@/components/Button';
+import { globalStyles } from '@/styles/globalStyles';
+import { useState } from 'react';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+export default function miAppIndex() {
+    const [cedulaIndex, setCedulaIndex] = useState("");
+    const [nombreIndex, setNombreIndex] = useState("");
+    const [error, setError] = useState("");
+    const [id_alumno, setAlumno_id] = useState("");
 
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
+    type students = {
+        id: number;
+        nombre: string;
+        cedula: string;
+        correo: string;
+        celular: string;
+    };
+    type notasEstudiante = {
+        nota1 : string,
+        nota2 : string,
+        nota3 : string,
+        nota4 : string,
+        materia: string,
+    };
+
+    //respuesta
+    const [notas, setNotas] = useState<notasEstudiante | null>(null);
+    const [student, setStudent] = useState<students | null>(null);
+
+    const ConsultarUsuario = async() => {
+
+        if (!nombreIndex.trim() && !cedulaIndex.trim()){
+            setError("Digite informacion en alguno de los campos");
+            setStudent(null);
+            return;
+        }
+        setError("");
+        const params = new URLSearchParams();
+        const nombre = nombreIndex.trim();
+        const cedula = cedulaIndex.trim()
+
+        if (nombreIndex) params.append("nombre", nombre);
+        if (cedulaIndex) params.append("cedula", cedula);
+
+        const response = await fetch(`http://localhost:4000/students?${params.toString()}`);
+
+        const data = await response.json();
+        setStudent(data);
+        
+        const responseNotas = await fetch(`http://localhost:4001/notas?alumno_id=${data.id}`);
+        const notas = await responseNotas.json();
+        console.log("notas estructura", notas);
+        setNotas(notas[0]);
+}
+    
+    
+    return (
+        <View style={globalStyles.container}>
+            <View style={globalStyles.Text}>
+            <Text style={globalStyles.Text }> Cedula</Text>
+            <TextInput 
+                style={globalStyles.input}
+                value={cedulaIndex}
+                onChangeText={setCedulaIndex}
             />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+            </View>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
+            <View style={globalStyles.Text}>
+            <Text style={globalStyles.Text}> Nombre</Text>
+            <TextInput 
+                style={globalStyles.input}
+                value={nombreIndex}
+                onChangeText={setNombreIndex}
+            />
+            </View>
+
+            <View style={globalStyles.buttonContainer}>
+                <Button theme="primary" label='Consultar' onPress={ConsultarUsuario}/>
+            </View>
+
+            <View>
+                <View style={globalStyles.CuadroNotas}>
+                    {!student ? (
+                        <Text>No hay resultados</Text>
+                    ) : (
+                    <View style={globalStyles.centrarNotas}>
+                        <Text>Nombre: {student.nombre}</Text>
+                        <Text>Nota 1: {notas?.nota1}</Text>
+                        <Text>Nota 2: {notas?.nota2}</Text>
+                        <Text>Nota 3: {notas?.nota3}</Text>
+                        <Text>Nota 4: {notas?.nota4}</Text>
+                        <Text>Materia: {notas?.materia}</Text>
+
+                        </View>
+                    )}
+                    </View>
+            </View>
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+
 });
