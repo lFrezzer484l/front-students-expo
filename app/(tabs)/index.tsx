@@ -43,12 +43,12 @@ export default function miAppIndex() {
         if (nombreIndex) params.append("nombre", nombre);
         if (cedulaIndex) params.append("cedula", cedula);
 
-        const response = await fetch(`http://localhost:4000/students?${params.toString()}`);
+        const response = await fetch(`${process.env.EXPO_PUBLIC_STUDENTS_API}/students?${params.toString()}`);
 
         const data = await response.json();
         setStudent(data);
         
-        const responseNotas = await fetch(`http://localhost:4001/notas?alumno_id=${data.id}`);
+        const responseNotas = await fetch(`${process.env.EXPO_PUBLIC_NOTAS_API}/notas?alumno_id=${data.id}`);
         const notas = await responseNotas.json();
         console.log("notas estructura", notas);
         setNotas(notas[0]);
