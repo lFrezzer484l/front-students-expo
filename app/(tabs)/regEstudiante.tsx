@@ -19,7 +19,7 @@ export default function miAppIndex(){
             return;
         }
         setError("");
-        const response = await fetch("http://localhost:4000/students", {
+        const response = await fetch(`${process.env.EXPO_PUBLIC_STUDENTS_API}/students`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
