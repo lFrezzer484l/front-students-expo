@@ -49,14 +49,14 @@ export default function miAppIndex(){
         if (nombre) params.append("nombre", name);
         if (cedula) params.append("cedula", cedul);
 
-        const response = await fetch(`http://localhost:4000/students?${params.toString()}`);
+        const response = await fetch(`${process.env.EXPO_PUBLIC_STUDENTS_API}/students?${params.toString()}`);
 
         const data = await response.json();
         setStudent(data); 
         setNombreUsuarioConsulta(data.nombre);
         setAlumno_id(data.id);
 
-        const obtenerNotas = await fetch(`http://localhost:4001/notas?alumno_id=${data.id}`);
+        const obtenerNotas = await fetch(`${process.env.EXPO_PUBLIC_NOTAS_API}/notas?alumno_id=${data.id}`);
         const notas = await obtenerNotas.json();
 
         const nota = notas[0];
@@ -99,7 +99,7 @@ export default function miAppIndex(){
             return;
         }
 
-        const response = await fetch('http://localhost:4001/notas', {
+        const response = await fetch(`${process.env.EXPO_PUBLIC_NOTAS_API}/notas`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
